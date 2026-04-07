@@ -8,16 +8,19 @@ import com.fabled.app.di.appModule
 import com.fabled.app.ui.App
 import org.koin.core.context.startKoin
 
-fun main() = application {
+fun main() {
     startKoin {
         modules(appModule)
     }
 
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = "Fabled — Novel Writing Studio",
-        state = rememberWindowState(width = 1400.dp, height = 900.dp)
-    ) {
-        App()
+    application {
+        Window(
+            onCloseRequest = ::exitApplication,
+            title = "Fabled — Novel Writing Studio",
+            state = rememberWindowState(width = 1400.dp, height = 900.dp)
+        ) {
+            App()
+        }
     }
 }
+
