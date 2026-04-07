@@ -1,0 +1,237 @@
+-- Projects table
+CREATE TABLE Project (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    genre TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    word_count INTEGER NOT NULL DEFAULT 0,
+    target_word_count INTEGER NOT NULL DEFAULT 0,
+    assistant_mode TEXT NOT NULL DEFAULT 'SOFT',
+    is_encrypted INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE Chapter (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    order_index INTEGER NOT NULL,
+    summary TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Scene (
+    id TEXT NOT NULL PRIMARY KEY,
+    chapter_id TEXT NOT NULL,
+    project_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL DEFAULT '',
+    summary TEXT,
+    order_index INTEGER NOT NULL,
+    word_count INTEGER NOT NULL DEFAULT 0,
+    target_word_count INTEGER,
+    pov TEXT,
+    location TEXT,
+    timeline_position TEXT,
+    emotional_beat TEXT,
+    tags TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (chapter_id) REFERENCES Chapter(id) ON DELETE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Character (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    traits TEXT NOT NULL DEFAULT '',
+    motivations TEXT NOT NULL DEFAULT '',
+    secrets TEXT NOT NULL DEFAULT '',
+    arc TEXT,
+    first_appearance TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Location (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    details TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Note (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    scene_id TEXT,
+    content TEXT NOT NULL,
+    is_inline INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE AssistantSuggestion (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    scene_id TEXT,
+    type TEXT NOT NULL,
+    content TEXT NOT NULL,
+    severity TEXT NOT NULL DEFAULT 'INFO',
+    is_resolved INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ContinuityFlag (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    type TEXT NOT NULL,
+    description TEXT NOT NULL,
+    scene_ids TEXT NOT NULL DEFAULT '',
+    is_resolved INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE TimelineEvent (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    position TEXT NOT NULL DEFAULT '',
+    scene_id TEXT,
+    characters TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
+);
+
+insertProject:
+INSERT OR REPLACE INTO Project(id, title, description, genre, created_at, updated_at, word_count, target_word_count, assistant_mode, is_encrypted)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAllProjects:
+SELECT * FROM Project ORDER BY updated_at DESC;
+
+selectProjectById:
+SELECT * FROM Project WHERE id = ?;
+
+updateProject:
+UPDATE Project SET title=?, description=?, genre=?, updated_at=?, word_count=?, target_word_count=?, assistant_mode=? WHERE id=?;
+
+deleteProject:
+DELETE FROM Project WHERE id=?;
+
+insertChapter:
+INSERT OR REPLACE INTO Chapter(id, project_id, title, order_index, summary, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectChaptersByProject:
+SELECT * FROM Chapter WHERE project_id = ? ORDER BY order_index ASC;
+
+selectChapterById:
+SELECT * FROM Chapter WHERE id = ?;
+
+updateChapter:
+UPDATE Chapter SET title=?, order_index=?, summary=?, updated_at=? WHERE id=?;
+
+deleteChapter:
+DELETE FROM Chapter WHERE id=?;
+
+insertScene:
+INSERT OR REPLACE INTO Scene(id, chapter_id, project_id, title, content, summary, order_index, word_count, target_word_count, pov, location, timeline_position, emotional_beat, tags, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectScenesByChapter:
+SELECT * FROM Scene WHERE chapter_id = ? ORDER BY order_index ASC;
+
+selectScenesByProject:
+SELECT * FROM Scene WHERE project_id = ? ORDER BY order_index ASC;
+
+selectSceneById:
+SELECT * FROM Scene WHERE id = ?;
+
+updateScene:
+UPDATE Scene SET title=?, content=?, summary=?, order_index=?, word_count=?, target_word_count=?, pov=?, location=?, timeline_position=?, emotional_beat=?, tags=?, updated_at=? WHERE id=?;
+
+deleteScene:
+DELETE FROM Scene WHERE id=?;
+
+insertCharacter:
+INSERT OR REPLACE INTO Character(id, project_id, name, description, traits, motivations, secrets, arc, first_appearance, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectCharactersByProject:
+SELECT * FROM Character WHERE project_id = ? ORDER BY name ASC;
+
+selectCharacterById:
+SELECT * FROM Character WHERE id = ?;
+
+updateCharacter:
+UPDATE Character SET name=?, description=?, traits=?, motivations=?, secrets=?, arc=?, first_appearance=?, updated_at=? WHERE id=?;
+
+deleteCharacter:
+DELETE FROM Character WHERE id=?;
+
+insertLocation:
+INSERT OR REPLACE INTO Location(id, project_id, name, description, details, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectLocationsByProject:
+SELECT * FROM Location WHERE project_id = ? ORDER BY name ASC;
+
+deleteLocation:
+DELETE FROM Location WHERE id=?;
+
+updateLocation:
+UPDATE Location SET name=?, description=?, details=?, updated_at=? WHERE id=?;
+
+insertNote:
+INSERT OR REPLACE INTO Note(id, project_id, scene_id, content, is_inline, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectNotesByProject:
+SELECT * FROM Note WHERE project_id = ? ORDER BY created_at DESC;
+
+selectNotesByScene:
+SELECT * FROM Note WHERE scene_id = ? ORDER BY created_at ASC;
+
+insertSuggestion:
+INSERT OR REPLACE INTO AssistantSuggestion(id, project_id, scene_id, type, content, severity, is_resolved, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectActiveSuggestionsByProject:
+SELECT * FROM AssistantSuggestion WHERE project_id = ? AND is_resolved = 0 ORDER BY created_at DESC;
+
+resolveSuggestion:
+UPDATE AssistantSuggestion SET is_resolved = 1 WHERE id = ?;
+
+insertContinuityFlag:
+INSERT OR REPLACE INTO ContinuityFlag(id, project_id, type, description, scene_ids, is_resolved, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectActiveFlagsByProject:
+SELECT * FROM ContinuityFlag WHERE project_id = ? AND is_resolved = 0 ORDER BY created_at DESC;
+
+resolveContinuityFlag:
+UPDATE ContinuityFlag SET is_resolved = 1 WHERE id = ?;
+
+insertTimelineEvent:
+INSERT OR REPLACE INTO TimelineEvent(id, project_id, title, description, position, scene_id, characters, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectTimelineEventsByProject:
+SELECT * FROM TimelineEvent WHERE project_id = ? ORDER BY position ASC, created_at ASC;
+
+deleteTimelineEvent:
+DELETE FROM TimelineEvent WHERE id = ?;
