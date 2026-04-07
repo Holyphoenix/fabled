@@ -4,6 +4,7 @@ import com.fabled.shared.domain.model.Project
 import com.fabled.shared.domain.usecase.project.CreateProjectUseCase
 import com.fabled.shared.domain.usecase.project.DeleteProjectUseCase
 import com.fabled.shared.domain.usecase.project.GetProjectsUseCase
+import com.fabled.shared.domain.usecase.project.UpdateProjectUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,7 +24,8 @@ data class ProjectUiState(
 class ProjectViewModel(
     private val getProjectsUseCase: GetProjectsUseCase,
     private val createProjectUseCase: CreateProjectUseCase,
-    private val deleteProjectUseCase: DeleteProjectUseCase
+    private val deleteProjectUseCase: DeleteProjectUseCase,
+    private val updateProjectUseCase: UpdateProjectUseCase
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val _state = MutableStateFlow(ProjectUiState(isLoading = true))
@@ -39,12 +41,24 @@ class ProjectViewModel(
         }
     }
 
-    fun createProject(title: String, description: String = "", genre: String = "") {
+    fun createProject(
+        title: String,
+        description: String = "",
+        genre: String = "",
+        targetWordCount: Int = 80000
+    ) {
         scope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
-            runCatching { createProjectUseCase(title, description, genre) }
+            runCatching { createProjectUseCase(title, description, genre, targetWordCount) }
                 .onFailure { e -> _state.value = _state.value.copy(error = e.message, isLoading = false) }
                 .onSuccess { _state.value = _state.value.copy(isLoading = false) }
+        }
+    }
+
+    fun updateProject(project: Project) {
+        scope.launch {
+            runCatching { updateProjectUseCase(project) }
+                .onFailure { e -> _state.value = _state.value.copy(error = e.message) }
         }
     }
 
@@ -63,3 +77,4 @@ class ProjectViewModel(
         _state.value = _state.value.copy(error = null)
     }
 }
+

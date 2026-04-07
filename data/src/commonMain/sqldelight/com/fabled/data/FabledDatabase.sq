@@ -104,6 +104,18 @@ CREATE TABLE ContinuityFlag (
     FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
 );
 
+CREATE TABLE TimelineEvent (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    position TEXT NOT NULL DEFAULT '',
+    scene_id TEXT,
+    characters TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES Project(id) ON DELETE CASCADE
+);
+
 insertProject:
 INSERT OR REPLACE INTO Project(id, title, description, genre, created_at, updated_at, word_count, target_word_count, assistant_mode, is_encrypted)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
@@ -126,6 +138,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
 
 selectChaptersByProject:
 SELECT * FROM Chapter WHERE project_id = ? ORDER BY order_index ASC;
+
+selectChapterById:
+SELECT * FROM Chapter WHERE id = ?;
 
 updateChapter:
 UPDATE Chapter SET title=?, order_index=?, summary=?, updated_at=? WHERE id=?;
@@ -178,6 +193,9 @@ SELECT * FROM Location WHERE project_id = ? ORDER BY name ASC;
 deleteLocation:
 DELETE FROM Location WHERE id=?;
 
+updateLocation:
+UPDATE Location SET name=?, description=?, details=?, updated_at=? WHERE id=?;
+
 insertNote:
 INSERT OR REPLACE INTO Note(id, project_id, scene_id, content, is_inline, created_at, updated_at)
 VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -207,3 +225,13 @@ SELECT * FROM ContinuityFlag WHERE project_id = ? AND is_resolved = 0 ORDER BY c
 
 resolveContinuityFlag:
 UPDATE ContinuityFlag SET is_resolved = 1 WHERE id = ?;
+
+insertTimelineEvent:
+INSERT OR REPLACE INTO TimelineEvent(id, project_id, title, description, position, scene_id, characters, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectTimelineEventsByProject:
+SELECT * FROM TimelineEvent WHERE project_id = ? ORDER BY position ASC, created_at ASC;
+
+deleteTimelineEvent:
+DELETE FROM TimelineEvent WHERE id = ?;

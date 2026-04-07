@@ -30,6 +30,16 @@ class WorldBuildingRepositoryImpl(private val database: FabledDatabase) : WorldB
         )
     }
 
+    override suspend fun updateLocation(location: Location) = withContext(Dispatchers.IO) {
+        database.fabledDatabaseQueries.updateLocation(
+            name = location.name,
+            description = location.description,
+            details = location.details,
+            updated_at = location.updatedAt,
+            id = location.id
+        )
+    }
+
     override suspend fun deleteLocation(id: String) = withContext(Dispatchers.IO) {
         database.fabledDatabaseQueries.deleteLocation(id)
     }

@@ -9,8 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.fabled.app.ui.assistant.AssistantPanel
 import com.fabled.app.ui.components.AdaptiveSidebar
-import com.fabled.app.ui.components.ContextualInsightPanel
 import com.fabled.app.viewmodel.AssistantViewModel
 import com.fabled.app.viewmodel.DraftingViewModel
 import com.fabled.shared.domain.model.Project
@@ -28,6 +28,19 @@ fun DraftingScreen(
     assistantViewModel: AssistantViewModel = koinInject()
 ) {
     val state by draftingViewModel.state.collectAsState()
+    val assistantState by assistantViewModel.state.collectAsState()
+
+    // Load chapters when project opens
+    LaunchedEffect(project.id) {
+        draftingViewModel.loadProject(project)
+    }
+
+    // Re-analyse scene whenever the active scene changes
+    LaunchedEffect(state.activeScene?.id) {
+        state.activeScene?.let { scene ->
+            assistantViewModel.analyzeScene(project.id, scene)
+        }
+    }
 
     if (state.isZenMode) {
         ZenModeScreen(
@@ -40,10 +53,20 @@ fun DraftingScreen(
         return
     }
 
+    // Show error snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            snackbarHostState.showSnackbar(it)
+            draftingViewModel.clearError()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(project.title) },
+                title = { Text(state.project?.title ?: project.title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
@@ -51,7 +74,6 @@ fun DraftingScreen(
                 },
                 actions = {
                     TextButton(onClick = onNavigateToWorldBuilding) { Text("World") }
-                    TextButton(onClick = onNavigateToCharacters) { Text("Characters") }
                     TextButton(onClick = onNavigateToTimeline) { Text("Timeline") }
                     if (state.activeScene != null) {
                         IconButton(onClick = draftingViewModel::toggleZenMode) {
@@ -63,10 +85,13 @@ fun DraftingScreen(
         }
     ) { padding ->
         Row(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // Left: adaptive chapter/scene sidebar
             AdaptiveSidebar(
-                project = project,
-                modifier = Modifier.width(240.dp).fillMaxHeight()
+                project = state.project ?: project,
+                modifier = Modifier.fillMaxHeight()
             )
+
+            // Center: writing area
             Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                 val activeScene = state.activeScene
                 if (activeScene != null) {
@@ -80,15 +105,22 @@ fun DraftingScreen(
                     )
                 } else {
                     Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                        Text(
-                            "Select or create a scene to start writing",
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                            if (state.chapters.isEmpty()) {
+                                Text("Create a chapter to get started", style = MaterialTheme.typography.bodyLarge)
+                            } else if (state.scenes.isEmpty()) {
+                                Text("Create a scene in this chapter", style = MaterialTheme.typography.bodyLarge)
+                            } else {
+                                Text("Select a scene to start writing", style = MaterialTheme.typography.bodyLarge)
+                            }
+                        }
                     }
                 }
             }
-            ContextualInsightPanel(
-                project = project,
+
+            // Right: assistant / contextual panel
+            VerticalDivider()
+            AssistantPanel(
                 modifier = Modifier.width(280.dp).fillMaxHeight()
             )
         }
@@ -107,13 +139,20 @@ private fun WritingArea(
     Column(modifier = modifier.padding(16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text("$wordCount words", style = MaterialTheme.typography.bodySmall)
             if (isSaving) {
-                Text("Saving...", style = MaterialTheme.typography.bodySmall)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp)
+                    Spacer(Modifier.width(4.dp))
+                    Text("Saving…", style = MaterialTheme.typography.bodySmall)
+                }
             } else {
-                TextButton(onClick = onSave) { Text("Save") }
+                TextButton(onClick = onSave, contentPadding = PaddingValues(horizontal = 8.dp)) {
+                    Text("Save")
+                }
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -121,7 +160,8 @@ private fun WritingArea(
             value = content,
             onValueChange = onContentChange,
             modifier = Modifier.fillMaxSize(),
-            placeholder = { Text("Start writing your scene...") }
+            placeholder = { Text("Start writing your scene…") }
         )
     }
 }
+
