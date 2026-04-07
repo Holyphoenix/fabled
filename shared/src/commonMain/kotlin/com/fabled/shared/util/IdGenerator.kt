@@ -3,7 +3,7 @@ package com.fabled.shared.util
 import kotlin.random.Random
 
 object IdGenerator {
-    fun generate(): String {
+    fun generateId(): String {
         val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         return buildString {
             repeat(8) { append(chars[Random.nextInt(chars.length)]) }

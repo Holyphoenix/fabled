@@ -14,7 +14,7 @@ class CreateSceneUseCase(private val repository: SceneRepository) {
         require(title.isNotBlank()) { "Scene title cannot be blank" }
         val now = System.currentTimeMillis()
         val scene = Scene(
-            id = IdGenerator.generate(),
+            id = IdGenerator.generateId(),
             chapterId = chapterId,
             projectId = projectId,
             title = title.trim(),

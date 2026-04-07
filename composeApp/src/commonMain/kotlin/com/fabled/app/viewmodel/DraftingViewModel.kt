@@ -47,7 +47,7 @@ class DraftingViewModel(
 
     fun updateContent(content: String) {
         val activeScene = _state.value.activeScene ?: return
-        val wordCount = content.split(Regex("\\s+")).filter { it.isNotBlank() }.size
+        val wordCount = activeScene.copy(content = content).calculateWordCount()
         _state.value = _state.value.copy(
             activeScene = activeScene.copy(content = content),
             wordCount = wordCount

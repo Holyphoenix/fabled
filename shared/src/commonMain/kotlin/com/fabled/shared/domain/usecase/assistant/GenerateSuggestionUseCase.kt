@@ -18,7 +18,7 @@ class GenerateSuggestionUseCase {
         if (scene.pov == null && mode != AssistantMode.SOFT) {
             suggestions.add(
                 AssistantSuggestion(
-                    id = IdGenerator.generate(),
+                    id = IdGenerator.generateId(),
                     projectId = projectId,
                     sceneId = scene.id,
                     type = SuggestionType.CONTINUITY_ALERT,
@@ -33,7 +33,7 @@ class GenerateSuggestionUseCase {
         if (scene.emotionalBeat == null && mode == AssistantMode.BOLD) {
             suggestions.add(
                 AssistantSuggestion(
-                    id = IdGenerator.generate(),
+                    id = IdGenerator.generateId(),
                     projectId = projectId,
                     sceneId = scene.id,
                     type = SuggestionType.EMOTIONAL_BEAT,
@@ -48,7 +48,7 @@ class GenerateSuggestionUseCase {
         if (scene.wordCount > 5000 && mode != AssistantMode.SOFT) {
             suggestions.add(
                 AssistantSuggestion(
-                    id = IdGenerator.generate(),
+                    id = IdGenerator.generateId(),
                     projectId = projectId,
                     sceneId = scene.id,
                     type = SuggestionType.PACING,

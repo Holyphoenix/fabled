@@ -19,7 +19,7 @@ class ContinuityCheckUseCase {
                 if (adjacentConflicts.isNotEmpty()) {
                     flags.add(
                         ContinuityFlag(
-                            id = IdGenerator.generate(),
+                            id = IdGenerator.generateId(),
                             projectId = projectId,
                             type = ContinuityFlagType.TRAVEL_CONTRADICTION,
                             description = "POV character '$pov' appears in different locations without travel.",

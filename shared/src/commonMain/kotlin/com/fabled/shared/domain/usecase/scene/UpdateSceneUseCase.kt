@@ -5,7 +5,7 @@ import com.fabled.shared.domain.repository.SceneRepository
 
 class UpdateSceneUseCase(private val repository: SceneRepository) {
     suspend operator fun invoke(scene: Scene): Scene {
-        val wordCount = scene.content.split(Regex("\\s+")).filter { it.isNotBlank() }.size
+        val wordCount = scene.calculateWordCount()
         val updated = scene.copy(wordCount = wordCount, updatedAt = System.currentTimeMillis())
         repository.updateScene(updated)
         return updated

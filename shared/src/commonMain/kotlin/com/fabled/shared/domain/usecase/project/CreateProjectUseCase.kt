@@ -16,7 +16,7 @@ class CreateProjectUseCase(private val repository: ProjectRepository) {
         require(title.isNotBlank()) { "Project title cannot be blank" }
         val now = System.currentTimeMillis()
         val project = Project(
-            id = IdGenerator.generate(),
+            id = IdGenerator.generateId(),
             title = title.trim(),
             description = description,
             genre = genre,

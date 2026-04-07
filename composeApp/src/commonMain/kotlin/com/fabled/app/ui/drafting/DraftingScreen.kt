@@ -2,7 +2,7 @@ package com.fabled.app.ui.drafting
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -46,7 +46,7 @@ fun DraftingScreen(
                 title = { Text(project.title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -68,9 +68,10 @@ fun DraftingScreen(
                 modifier = Modifier.width(240.dp).fillMaxHeight()
             )
             Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                if (state.activeScene != null) {
+                val activeScene = state.activeScene
+                if (activeScene != null) {
                     WritingArea(
-                        content = state.activeScene!!.content,
+                        content = activeScene.content,
                         wordCount = state.wordCount,
                         isSaving = state.isSaving,
                         onContentChange = draftingViewModel::updateContent,
